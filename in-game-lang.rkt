@@ -1,9 +1,11 @@
 #lang racket
 
 (provide at
+	 build small
 	 codespells-basic-lang)
 
 (require codespells-runes
+	 codespells-runes/basic-lang
 	 (rename-in (only-in codespells-runes/basic-lang build) 
 		    [build old-build]))
 
