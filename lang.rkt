@@ -52,9 +52,12 @@
 			var lang = @(call-method 'container 'currentLanguage)
 
 			if(code != ""){
+			var fd = new FormData()
+			fd.append("spell", code)
+
 			fetch('/stage-spell?lang=' + lang,
 			      {method: 'POST',
-			      body: code})
+			      body: fd})
 			.then((r)=>cb())
 			}
 			})
@@ -68,9 +71,12 @@
 			})
 	      (function (runSpell lang code)
 			@js{
+			var fd = new FormData()
+			fd.append("spell", code)
+
 			fetch('/eval-spell?lang=' + lang,
 			      {method: 'POST',
-			      body: code})
+			      body: fd})
 			.then(response => {
 	                  return response.text()	
 		        })
@@ -97,8 +103,13 @@
 
 
 (define (request->code r)
+  #;
   (bytes->string/utf-8 
-    (request-post-data/raw r)))
+    (request-post-data/raw r))
+  (string->symbol
+    (extract-binding/single
+      'spell
+      (request-bindings r))))
 
 (define (request->lang r)
   (string->symbol
@@ -138,18 +149,17 @@
   (define result (run-code lang code))
 
   (response/html/content
-    (card-group  style: (properties height: 500
-			     width: "100%")
-      (card style: (properties position: 'relative
-			      width: "50%"
-			      height: "100%")
+    (card-group  style: (properties height: 250
+				    width: "100%")
+		 (card style: (properties position: 'relative
+					  height: "100%")
 
 
-	    (datum->html 
-	      (basic-lang)
-	      result))
+		       (datum->html 
+			 (basic-lang)
+			 result))
 
-      (card (card-body (card-text (~v result)))))))
+		 (card (card-body (card-text (~v result)))))))
 
 (define (run-code lang code)
   (dynamic-require lang #f)
