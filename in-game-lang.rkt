@@ -28,9 +28,10 @@
 	;  about where the build happened, whether it succeeded, etc...
 	(define radius
 	  (match size
-		 ['small 200]
-		 ['medium 500]
-		 ['large 700]))
+		 ['small 400]
+		 ['medium 600]
+		 ['large 800]
+		 [else 200]))
 
 	(unreal-call "build"
 		     (xyz-hash
