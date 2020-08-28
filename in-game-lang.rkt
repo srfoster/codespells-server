@@ -80,6 +80,8 @@
 (define (codespells-basic-lang) 
   ;TODO: Change the rune-lang-name to codespells-server/in-game-lang
   ;  TODO: Patch build function.  (Rune is fine...)
-  (basic-lang))
+  (struct-copy rune-lang
+    (basic-lang)
+    [name 'codespells-server/in-game-lang]))
 
 ;End in-world lang stuff

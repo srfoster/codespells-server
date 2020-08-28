@@ -124,7 +124,6 @@
 (define last-spell #f)
 
 (define (stage-spell r)
-  (displayln "Staging")
   (define code (request->code r))
 
   (define lang 
@@ -146,9 +145,6 @@
   (define lang 
     (request->lang r))
 
-  (displayln lang)
-  (displayln code)
-
   (define result (run-code lang code))
 
   (response/html/content
@@ -165,13 +161,16 @@
 		 (card (card-body (card-text (~v result)))))))
 
 (define (run-code lang code)
+  (displayln (~a "Running in lang: " lang))
+  (displayln code)
+
   (dynamic-require lang #f)
 
   (define result
     (eval (read (open-input-string (~a "(let () " code ")")))
 	  (module->namespace lang)))
 
-  (displayln result)
+  (displayln (~a "Result: " result))
 
   result )
 
