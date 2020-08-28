@@ -1,6 +1,7 @@
 #lang at-exp racket
 
 (provide 
+  at
   run-staged
   codespells-server-start)
 
@@ -14,6 +15,29 @@
          http/request
          net/uri-codec
 	 codespells-runes)
+
+;in-world Lang stuff
+
+(define at-x (make-parameter #f))
+(define at-y (make-parameter #f))
+(define at-z (make-parameter #f))
+(define-syntax-rule (at [x y z] code)
+		    (parameterize
+		      ([at-x x]
+		       [at-y y]
+		       [at-z z])
+		      code))
+
+(module+ test
+	 (require rackunit)
+	 (check-equal?
+	   (at [2 2 2]
+	       (+ (at-x) (at-y)))
+	   4
+	   "(at [_ _ _] ...) should set (at-*) params correctly")
+	 )
+
+;End in-world lang stuff
 
 
 (define (welcome r)
