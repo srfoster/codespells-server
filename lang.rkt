@@ -1,6 +1,8 @@
 #lang at-exp racket
 
-(provide codespells-server-start)
+(provide 
+  run-staged
+  codespells-server-start)
 
 ;TODO: Cleanup requires
 (require web-server/servlet
@@ -25,32 +27,47 @@
 	(div "Welcome to the CodeSpells Web-Server!"
 	     (ul
 	       (li (a href: "/editor"
-		     "Check out the editor")))
-	     )))))
+		     "Check out the editor"))))))))
 
 (define (editor r)
   (define (spell-runner editor)
     (enclose
       (div id: (id 'id)
+	   'onmouseleave: (call 'stageSpell)
 	editor
 	(button-success
-	  on-click: (call 'runCode)
+	  on-click: (call 'stageAndRun)
 	  "Run")
 	(div
 	  style: (properties
 		   padding-top: 20)
 	  (code 
-	    (pre id: (id 'out)
-		 ))))
+	    (pre id: (id 'out)))))
       (script ()
-	      (function (runCode)
+	      (function (stageSpell cb)
 			@js{
-			//TODO: Get code, ajax
 			var container = document.querySelector(@(~j "#NAMESPACE_id .runeContainer"))
 
 			var code = @(call-method 'container 'compile)
 			var lang = @(call-method 'container 'currentLanguage)
 
+			if(code != ""){
+			fetch('/stage-spell?lang=' + lang,
+			      {method: 'POST',
+			      body: code})
+			.then((r)=>cb())
+			}
+			})
+	      (function (runStagedSpell)
+			@(call 'runSpell "codespells-server" "(run-staged)"))
+
+	      (function (stageAndRun)
+			@js{
+                          @(call 'stageSpell
+				 @js{()=>@(call 'runStagedSpell)})
+			})
+	      (function (runSpell lang code)
+			@js{
 			fetch('/eval-spell?lang=' + lang,
 			      {method: 'POST',
 			      body: code})
@@ -61,9 +78,9 @@
 				     $(@(~j "#NAMESPACE_out")).html(result)
 
 				     })
-			
-
-			}))))
+			}
+			)
+	      )))
   (response/html/content 
     (container 
       (jumbotron
@@ -77,31 +94,49 @@
 
 
 
-(define-namespace-anchor a)
-(define ns (namespace-anchor->namespace a))
-(define (eval-spell r)
-  (define code (bytes->string/utf-8 (request-post-data/raw r)))
+
+
+(define (request->code r)
+  (bytes->string/utf-8 
+    (request-post-data/raw r)))
+
+(define (request->lang r)
+  (string->symbol
+    (extract-binding/single
+      'lang
+      (request-bindings r))))
+
+(define last-lang #f)
+(define last-spell #f)
+
+(define (stage-spell r)
+  (displayln "Staging")
+  (define code (request->code r))
 
   (define lang 
-    (string->symbol
-      (extract-binding/single
-	'lang
-	(request-bindings r))))
+    (request->lang r))
+
+  (set! last-lang lang)
+  (set! last-spell
+    (read (open-input-string (~a "(let () " code ")"))))
+  
+  (response/html/content
+    (div "Staged spell")))
+
+(define (run-staged)
+  (run-code last-lang last-spell))
+
+(define (eval-spell r)
+  (define code (request->code r))
+
+  (define lang 
+    (request->lang r))
 
   (displayln lang)
   (displayln code)
 
-  (dynamic-require lang #f)
+  (define result (run-code lang code))
 
-  (define result
-    (eval (read (open-input-string (~a "(let () " code ")")))
-	  (module->namespace lang)
-	  #;
-	  ns))
-
-  (displayln result)
-
-  ;TODO: json... Or a nicely formatted success/error enclosure.  Show both in text and code...
   (response/html/content
     (card-group  style: (properties height: 500
 			     width: "100%")
@@ -114,8 +149,18 @@
 	      (basic-lang)
 	      result))
 
-      (card (card-body (card-text (~v result))))
-      )))
+      (card (card-body (card-text (~v result)))))))
+
+(define (run-code lang code)
+  (dynamic-require lang #f)
+
+  (define result
+    (eval (read (open-input-string (~a "(let () " code ")")))
+	  (module->namespace lang)))
+
+  (displayln result)
+
+  result )
 
 (define-values (start url)
     (dispatch-rules
@@ -123,7 +168,9 @@
        welcome ]
       [("editor")
        editor]
-
+      [("stage-spell")
+       #:method "post"
+       stage-spell]
       [("eval-spell")
        #:method "post"
        eval-spell]
