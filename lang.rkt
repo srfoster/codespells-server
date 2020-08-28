@@ -83,11 +83,11 @@
 	      )))
   (response/html/content 
     (container 
-      (jumbotron
-	(img 
-	  style: (properties
-		   width: "100%")
-	  src: "https://codespells.org/images/logo.png"))
+      @style/inline{
+        body{
+	  background-color: rgba(0,0,0,0);
+	}
+      }
       (spell-runner
 	(rune-injector (basic-lang)
 		       (demo-editor (basic-lang)))))))
