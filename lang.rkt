@@ -1,9 +1,9 @@
 #lang at-exp racket
 
 (provide 
-  at
   run-staged
-  codespells-server-start)
+  codespells-server-start
+  (all-from-out "./in-game-lang.rkt"))
 
 ;TODO: Cleanup requires
 (require web-server/servlet
@@ -14,30 +14,9 @@
 	 (except-in website-js header)
          http/request
          net/uri-codec
-	 codespells-runes)
+	 codespells-runes
+	 "./in-game-lang.rkt")
 
-;in-world Lang stuff
-
-(define at-x (make-parameter #f))
-(define at-y (make-parameter #f))
-(define at-z (make-parameter #f))
-(define-syntax-rule (at [x y z] code)
-		    (parameterize
-		      ([at-x x]
-		       [at-y y]
-		       [at-z z])
-		      code))
-
-(module+ test
-	 (require rackunit)
-	 (check-equal?
-	   (at [2 2 2]
-	       (+ (at-x) (at-y)))
-	   4
-	   "(at [_ _ _] ...) should set (at-*) params correctly")
-	 )
-
-;End in-world lang stuff
 
 
 (define (welcome r)
@@ -57,7 +36,7 @@
   (define (spell-runner editor)
     (enclose
       (div id: (id 'id)
-	   'onmouseleave: (call 'stageSpell)
+	   'onmouseleave: (call 'stageSpell @js{()=>null})
 	editor
 	(button-success
 	  on-click: (call 'stageAndRun)
@@ -119,8 +98,8 @@
 	}
       }
       (spell-runner
-	(rune-injector (basic-lang)
-		       (demo-editor (basic-lang)))))))
+	(rune-injector (codespells-basic-lang)
+		       (demo-editor (codespells-basic-lang)))))))
 
 
 
@@ -180,7 +159,7 @@
 
 
 		       (datum->html 
-			 (basic-lang)
+			 (codespells-basic-lang)
 			 result))
 
 		 (card (card-body (card-text (~v result)))))))
