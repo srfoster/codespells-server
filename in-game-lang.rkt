@@ -1,7 +1,7 @@
 #lang racket
 
 (provide at
-	 build small
+	 build small medium large
 	 codespells-basic-lang)
 
 (require codespells-runes
@@ -21,7 +21,7 @@
 
 
 
-(define (build size)
+(define (build [size #f])
   (if (in-world)
       (let ()
 	;Maybe one day return a fancy Rune for some struct
