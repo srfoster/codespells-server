@@ -10,8 +10,8 @@
          web-server/servlet-env
          (only-in website/bootstrap website-bootstrap-path)
          webapp/server/util/responses
-	 (except-in webapp/js header)
-	 (except-in website-js header)
+	 (except-in webapp/js header small)
+	 (except-in website-js header small)
          http/request
          net/uri-codec
 	 codespells-runes
