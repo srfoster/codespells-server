@@ -33,6 +33,11 @@
 		 ['large 800]
 		 [else 200]))
 
+	(unreal-call "js"
+		     (hash 
+		       'script "buildSphere(500)"))
+
+	#;
 	(unreal-call "build"
 		     (xyz-hash
 		       'radius
