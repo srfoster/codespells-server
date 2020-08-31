@@ -35,7 +35,7 @@
 
 	(unreal-call "js"
 		     (hash 
-		       'script "buildSphere(500)"))
+		       'script (~a "buildSphere(" (at-x) "," (at-y) "," (at-z) ", 500)")))
 
 	#;
 	(unreal-call "build"
@@ -58,6 +58,7 @@
 (define at-x (make-parameter #f))
 (define at-y (make-parameter #f))
 (define at-z (make-parameter #f))
+
 (define by-x (make-parameter 0))
 (define by-y (make-parameter 0))
 (define by-z (make-parameter 0))
