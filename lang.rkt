@@ -15,7 +15,8 @@
          http/request
          net/uri-codec
 	 codespells-runes
-	 "./in-game-lang.rkt")
+	 "./in-game-lang.rkt"
+         "./lore.rkt")
 
 
 
@@ -31,6 +32,36 @@
 	     (ul
 	       (li (a href: "/editor"
 		     "Check out the editor"))))))))
+
+
+;TODO: Move to codespells-runes
+; * Should maybe take a value to namespace the localStorage.  NAMESPACE changes on refresh; can't use.
+; * On reload, need to do an injection.  Something like html->js-injector, but with just a string.
+(define (rune-saver child-with-surface)
+  (enclose
+      (div id: (id 'id)
+	   'onmouseup: (call 'save)
+	child-with-surface)
+      (script ([construct (call 'constructor)])
+              (function (constructor)
+                        (call 'load))
+	      (function (save)
+			@js{
+                        var toSave = $(@(~j "#NAMESPACE_id .runeSurface")).html()
+			window.localStorage.setItem(@(~j "rune_storage"), toSave)
+			})
+	      (function (load)
+			@js{
+                        var toLoad = window.localStorage.getItem(@(~j "rune_storage"))
+                        console.log("toLoad", toLoad)
+                        if(toLoad && toLoad != ""){
+                          $(@(~j "#NAMESPACE_id .runeSurface")).html(toLoad)
+                        }
+			})
+	      
+              )))
+
+
 
 (define (editor r)
   (define (spell-runner editor)
@@ -89,26 +120,24 @@
 				     })
 			}
 			)
-	      )))
+              )))
   (response/html/content 
-    (container 
-      @style/inline{
-        body{
-	  background-color: rgba(0,0,0,0);
-	}
-      }
-      (spell-runner
-	(rune-injector (codespells-basic-lang)
-		       (demo-editor (codespells-basic-lang)))))))
+   (container 
+    @style/inline{
+ body{
+  background-color: rgba(0,0,0,0);
+ }
+}
+    (spell-runner
+     (identity ;rune-saver
+      (rune-injector (codespells-basic-lang)
+                     (demo-editor (codespells-basic-lang))))))))
 
 
 
 
 
 (define (request->code r)
-  #;
-  (bytes->string/utf-8 
-    (request-post-data/raw r))
   (string->symbol
     (extract-binding/single
       'spell
@@ -186,20 +215,10 @@
       [("eval-spell")
        #:method "post"
        eval-spell]
-
-      #;
-      [("scripts" (string-arg))
-       #:method "post"
-       scripts]
-      #;
+     
       [("lore")
-       lore-page]
-      #;
-      [("lores")
-       lores-page]
-      #;
-      [("set-last-script")
-       set-last-script]
+       show-lore-page]
+
       )
     )
 
