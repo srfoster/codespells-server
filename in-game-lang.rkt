@@ -1,6 +1,6 @@
 #lang at-exp racket
 
-(provide at up down east west north south
+(provide at up down east west north south particles
 	 build small medium large warp
          dig
 	 codespells-basic-lang)
@@ -19,6 +19,19 @@
 
 ;in-world Lang stuff
 
+(define temp-particle-i 0)
+(define (particles)
+
+  (define kind
+    (~a
+     "/Game/BeamAndLaserFX01/Particles/P_ky_beam0" (add1 temp-particle-i)
+     ))
+
+  (set! temp-particle-i (remainder (add1 temp-particle-i) 6))
+  
+  (unreal-call "js"
+               (hash 
+                'script @~a{spawnParticles(@(current-x),@(current-y),@(current-z),"@kind")})))
 
 (define (lore some-html)
   (set-next-lore-to-show! some-html)
@@ -204,6 +217,14 @@
   (define extra-runes
     (rune-lang 'codespells-server/in-game-lang
                 (list
+
+                 (html-rune 'particles
+                            (svg-rune-description
+                             (rune-background
+                              #:color "green"
+                              (rune-image
+                               (circle 40 'solid 'green)))))
+                 
                  (html-rune 'teleport 
                             (svg-rune-description
                              (rune-background
