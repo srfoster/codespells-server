@@ -177,7 +177,7 @@
   (+ (by-z) (at-z)))
 
 
-(define (codespells-basic-lang) 
+(define codespells-basic-lang (let ()
   (local-require 2htdp/image)
 
   (define (axis #:up [up-c 'green]
@@ -327,6 +327,6 @@
   ;TODO: Make append-rune-langs take the language of the first one?  #:name param??
   (struct-copy rune-lang
                augmented-language
-               [name 'codespells-server/in-game-lang]))
+               [name 'codespells-server/in-game-lang])))
 
 ;End in-world lang stuff

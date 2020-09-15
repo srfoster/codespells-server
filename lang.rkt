@@ -131,9 +131,9 @@
     (rune-surface-height 750)
     (spell-runner
      (identity ;rune-saver
-      (rune-injector (codespells-basic-lang)
-                     ;(demo-editor (codespells-basic-lang))
-                     (rune-surface-component (codespells-basic-lang))
+      (rune-injector codespells-basic-lang
+                     ;(demo-editor codespells-basic-lang)
+                     (rune-surface-component codespells-basic-lang)
                      ))))))
 
 
@@ -187,7 +187,7 @@
 
 
 		       (datum->html 
-			 (codespells-basic-lang)
+			 codespells-basic-lang
 			 result))
 
 		 (card (card-body (card-text (~v result)))))))
