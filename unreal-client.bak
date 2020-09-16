@@ -1,0 +1,49 @@
+#lang racket 
+
+(provide unreal-call)
+
+(require net/uri-codec
+         net/http-easy
+         ;simple-http
+         )
+
+#;
+(define unreal-url
+  (update-port (update-host
+                 ;text-requester
+                 json-requester
+                 "localhost") 8080))
+
+(define (unreal-call verb params)
+  (displayln "Sending to Unreal...")
+
+  
+  (post "127.0.0.1:8080/js"
+        #:close? #t
+        #:data (hash-ref params 'script))
+
+  (void)
+
+  
+  ;TODO: Don't use curl... (Figure out how to make the rackety way faster... Debugging disabled?)
+
+   
+
+  #|
+  (define curl
+    (~a "curl -X POST \"http://localhost:8080/" verb (hash->params params) "\""))
+  (system curl)
+
+  (void)
+|#
+  )
+
+(define (hash->params h)
+  (define ks (hash-keys h))
+
+  (~a "?"
+      (string-join
+       (map (lambda (k)
+              (~a k "=" (uri-encode (~a (hash-ref h k)))))
+            ks)
+       "&")))

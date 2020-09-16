@@ -1,8 +1,10 @@
 #lang at-exp racket
 
-(provide at up down east west north south particles
+(provide at up down east west north south lore spinning beam
 	 build small medium large warp
          dig
+         rotated
+         current-x current-y current-z
 	 codespells-basic-lang)
 
 (require codespells-runes
@@ -18,20 +20,97 @@
 	 (require (only-in codespells-runes/basic-lang small)))
 
 ;in-world Lang stuff
+; TODO: Start breaking this out into different packages.
+; There should be just one codespells language.
 
-(define temp-particle-i 0)
-(define (particles)
+(define (js-game-object name)
+  @~a{
+    function(){
+      var o = @name ({location: {x:@(current-x),y:@(current-y),z:@(current-z)},
+                      rotation: {roll:@(current-roll),pitch:@(current-pitch),yaw:@(current-yaw)}})
 
-  (define kind
-    (~a
-     "/Game/BeamAndLaserFX01/Particles/P_ky_beam0" (add1 temp-particle-i)
-     ))
+      return o()
+    }
+  })
 
-  (set! temp-particle-i (remainder (add1 temp-particle-i) 6))
+(define do-side-effects? (make-parameter #t))
+(define-syntax-rule (no-side-effects lines ...)
+  (parameterize ([do-side-effects? #f])
+    lines ...
+    ))
+
+(define-syntax-rule (protected-unreal-call! unreal-script)
+  (if (do-side-effects?)
+      (unreal-call "js"
+                   (hash
+                    'script @~a{var top = @unreal-script}))
+      unreal-script
+      ))
+
+(define-syntax-rule (beam kind children ...) ;Must be syntax rule -- to make no-side-effects apply before the args are evaluated
+  (let ()
   
-  (unreal-call "js"
-               (hash 
-                'script @~a{spawnParticles(@(current-x),@(current-y),@(current-z),"@kind")})))
+  (protected-unreal-call!
+   @~a{
+ function(){
+  var cube = beamObject({location: {x:@(current-x),y:@(current-y),z:@(current-z)},
+                      rotation: {roll:@(current-roll),pitch:@(current-pitch),yaw:@(current-yaw)}})("@kind")
+
+   
+
+  var children = [@(no-side-effects
+                    (at [0 0 0]
+                        (string-join (flatten (list children ...)) ",")))]
+
+  children.map((c)=>{
+   c.AttachActorToActor(cube)
+   });
+
+  return cube
+  }()
+ })))
+
+(define-syntax-rule (spinning children ...)
+  
+  (let ()
+  
+    (protected-unreal-call!
+     ;//TODO: Empty/hidden actor, not cube
+     @~a{
+ function(){
+  var parent = @(js-game-object "emptyObject")(); 
+
+  var children = [@(no-side-effects
+                    (at [0 0 0]
+                        (string-join (flatten (list children ...)) ",")))];
+
+  children.map((c)=>{
+   c.AttachActorToActor(parent)
+   });
+
+  parent.StaticMeshComponent.SetMobile()
+  setInterval(function(){
+   parent.AddActorLocalRotation({Pitch: 1})
+   }, 10)
+
+  return parent
+  }()
+ }) 
+    ))
+
+
+
+;TODO: Constants/runes for other effect systems?
+;"/Game/MagicModule/VFX/P_Vortex"
+
+#;
+(define (beam suff)
+  (~a "/Game/BeamAndLaserFX01/Particles/P_ky_beam" suff))
+
+#;
+(define (vfx suff)
+  (~a "/Game/MagicModule/VFX/P_" suff))
+
 
 (define (lore some-html)
   (set-next-lore-to-show! some-html)
@@ -156,8 +235,22 @@
 		    (parameterize
 		      ([in-world #t]
 		       [at-x x]
-		       [at-y y] ;TODO: I think Unreal swaps y and z compared to Unity...
-		       [at-z z])
+		       [at-y y] 
+		       [at-z z]
+                       [by-x 0]
+                       [by-y 0]
+                       [by-z 0])
+		      code))
+
+(define current-roll  (make-parameter 0))
+(define current-pitch (make-parameter 0))
+(define current-yaw   (make-parameter 0))
+(define-syntax-rule (rotated [r p y] code)
+		    (parameterize
+		      ([in-world #t]
+		       [current-roll r]
+		       [current-pitch p] 
+		       [current-yaw y])
 		      code))
 
 (module+ test
@@ -221,9 +314,39 @@
                  (html-rune 'particles
                             (svg-rune-description
                              (rune-background
-                              #:color "green"
+                              #:color "white"
                               (rune-image
-                               (circle 40 'solid 'green)))))
+                               (above
+                                (circle 10 'solid 'white)
+                                (beside
+                                 (circle 10 'solid 'white)
+                                 (circle 30 'solid 'white)
+                                 (circle 10 'solid 'white))
+                                (circle 10 'solid 'white))))))
+
+                 #;
+                 (html-rune 'beam
+                            (svg-rune-description
+                             (rune-background
+                              #:color "white"
+                              (rune-image
+                               (beside
+                                (rectangle 10 60 'solid 'purple)
+                                (rectangle 10 80 'solid 'pink)
+                                (rectangle 10  60 'solid 'purple))
+                               ))))
+
+                 #;
+                 (html-rune 'vfx
+                            (svg-rune-description
+                             (rune-background
+                              #:color "white"
+                              (rune-image
+                               (beside
+                                (rectangle 10 60 'solid 'darkgreen)
+                                (rectangle 10 80 'solid 'green)
+                                (rectangle 10  60 'solid 'darkgreen))
+                               ))))
                  
                  (html-rune 'teleport 
                             (svg-rune-description

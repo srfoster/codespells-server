@@ -3,6 +3,7 @@
 (provide 
   run-staged
   codespells-server-start
+  current-editor-lang
   (all-from-out "./in-game-lang.rkt"))
 
 ;TODO: Cleanup requires
@@ -17,7 +18,6 @@
 	 codespells-runes
 	 "./in-game-lang.rkt"
          "./lore.rkt")
-
 
 
 (define (welcome r)
@@ -62,13 +62,16 @@
               )))
 
 
+(define current-editor-lang (make-parameter (codespells-basic-lang)))
 
 (define (editor r)
   (define (spell-runner editor)
     (enclose
+     
       (div id: (id 'id)
 	   'onmouseleave: (call 'stageSpell @js{()=>null})
 	editor
+        #;
 	(button-success
 	  on-click: (call 'stageAndRun)
 	  "Run")
@@ -84,6 +87,8 @@
 
 			var code = @(call-method 'container 'compile)
 			var lang = @(call-method 'container 'currentLanguage)
+
+                        
 
 			if(code != ""){
 			var fd = new FormData()
@@ -131,9 +136,9 @@
     (rune-surface-height 750)
     (spell-runner
      (identity ;rune-saver
-      (rune-injector (codespells-basic-lang)
+      (rune-injector (current-editor-lang)
                      ;(demo-editor (codespells-basic-lang))
-                     (rune-surface-component (codespells-basic-lang))
+                     (rune-surface-component (current-editor-lang))
                      ))))))
 
 
@@ -163,7 +168,7 @@
 
   (set! last-lang lang)
   (set! last-spell
-    (read (open-input-string (~a "(let () " code ")"))))
+    (read (open-input-string (~a "(let () " (substring (~v code) 1) ")"))))
   
   (response/html/content
     (div "Staged spell")))

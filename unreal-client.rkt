@@ -1,21 +1,40 @@
 #lang racket 
 
-(provide unreal-call)
+(provide
+ unreal-eval-js ;Use this from now on
 
-(require net/uri-codec)
+ 
+ unreal-call ;deprecating because it assumed non /js endpoints.  But things have been simplified
+ )
+
+(require net/uri-codec
+         net/http-easy)
+
+
+(define (unreal-eval-js js)
+
+  (with-handlers ([exn:fail:network:errno?
+                   (lambda (e)
+                     (displayln e)
+                     (displayln "No World server found at 127.0.0.1:8080.  Trying again in 5 seconds...")
+                     (sleep 5)
+                     (unreal-eval-js js))
+                   ])
+    (post "127.0.0.1:8080/js"
+          #:close? #t
+          #:data js)
+
+    (displayln "Sent Magic Across to word: ")
+    (displayln js))
+
+  )
 
 (define (unreal-call verb params)
-  ;TODO: Don't use curl... (Figure out how to make the rackety way faster... Debugging disabled?)
-  (define curl
-    (~a "curl \"http://localhost:8080/" verb (hash->params params) "\""))
-  (system curl))
+  (displayln "Sending to Unreal...")
+  
+  (post "127.0.0.1:8080/js"
+        #:close? #t
+        #:data (hash-ref params 'script))
 
-(define (hash->params h)
-  (define ks (hash-keys h))
+  (void))
 
-  (~a "?"
-      (string-join
-       (map (lambda (k)
-              (~a k "=" (uri-encode (~a (hash-ref h k)))))
-            ks)
-       "&")))
