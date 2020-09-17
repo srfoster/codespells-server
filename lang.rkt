@@ -152,10 +152,16 @@
       (request-bindings r))))
 
 (define (request->lang r)
-  (string->symbol
+  (define lang-string
     (extract-binding/single
-      'lang
-      (request-bindings r))))
+     'lang
+     (request-bindings r)))
+
+  ;Check if file: So we can dynamic require raw rkt files without needing them to be installed packages
+  (if (file-exists? lang-string) 
+      (string->path lang-string)
+      (string->symbol
+       lang-string)))
 
 (define last-lang #f)
 (define last-spell #f)

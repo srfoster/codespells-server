@@ -5,6 +5,7 @@
          dig
          rotated
          current-x current-y current-z
+         current-roll current-pitch current-yaw
 	 codespells-basic-lang)
 
 (require codespells-runes
