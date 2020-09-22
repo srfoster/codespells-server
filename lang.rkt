@@ -17,7 +17,8 @@
          net/uri-codec
 	 codespells-runes
 	 "./in-game-lang.rkt"
-         "./lore.rkt")
+         "./lore.rkt"
+         "./unreal-client.rkt")
 
 
 (define (welcome r)
@@ -212,6 +213,9 @@
   (define result
     (eval (read (open-input-string (~a "(let () " code ")")))
 	  (module->namespace lang)))
+
+  (when (unreal-js-fragment? result)
+    (unreal-eval-js result))
 
   (displayln (~a "Result: " result))
 

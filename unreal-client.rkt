@@ -1,8 +1,9 @@
 #lang racket 
 
 (provide
+ (struct-out unreal-js-fragment)
  unreal-eval-js ;Use this from now on
-
+ unreal-js
  
  unreal-call ;deprecating because it assumed non /js endpoints.  But things have been simplified
  )
@@ -10,9 +11,22 @@
 (require net/uri-codec
          net/http-easy)
 
+(struct unreal-js-fragment (content) #:transparent)
 
-(define (unreal-eval-js js)
+(define (string-or-fragment->string s)
+  (if (string? s)
+      s
+      (unreal-js-fragment-content s)))
 
+(define (unreal-js . ss)
+  (unreal-js-fragment
+   (string-join (flatten
+                 (map string-or-fragment->string
+                      ss)))))
+
+(define (unreal-eval-js js-string-or-fragment)
+  (define js (string-or-fragment->string js-string-or-fragment))
+  
   (with-handlers ([exn:fail:network:errno?
                    (lambda (e)
                      (displayln e)
