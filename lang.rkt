@@ -180,8 +180,7 @@
   (response/html/content
     (div "Staged spell")))
 
-(define (run-staged)
-  (run-code last-lang last-spell))
+
 
 (define (eval-spell r)
   (define code (request->code r))
@@ -198,13 +197,20 @@
 					  height: "100%")
 
 
-		       (datum->html 
-			 (codespells-basic-lang)
-			 result))
+                       (with-handlers ([exn:fail? (lambda (e)
+                                                    (displayln (~a "No way to turn result into a Rune: "))
+                                                    (displayln result)
+                                                    (div "error"))])
+                           (datum->html 
+                            (codespells-basic-lang)
+                            result)))
 
 		 (card (card-body (card-text (~v result)))))))
 
-(define (run-code lang code)
+(define (run-staged)
+  (run-code #:side-effects? #f last-lang last-spell))
+
+(define (run-code #:side-effects? (side-effects? #t) lang code)
   (displayln (~a "Running in lang: " lang))
   (displayln code)
 
@@ -214,7 +220,8 @@
     (eval (read (open-input-string (~a "(let () " code ")")))
 	  (module->namespace lang)))
 
-  (when (unreal-js-fragment? result)
+  
+  (when (and side-effects? (unreal-js-fragment? result))
     (unreal-eval-js result))
 
   (displayln (~a "Result: " result))
