@@ -212,7 +212,7 @@
     ['small 400]
     ['medium 600]
     ['large 800]
-    [else 200]))
+    [else lms]))
 
 (module+ test
 	 (check-pred element?
