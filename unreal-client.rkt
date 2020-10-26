@@ -27,14 +27,18 @@
 
 (define (unreal-eval-js js-string-or-fragment)
   (define js (string-or-fragment->string js-string-or-fragment))
-  
+
+  (displayln "************* unreal-eval-js ******************")
+
   (with-handlers ([exn:fail:network:errno?
                    (lambda (e)
                      (displayln e)
                      (displayln "No World server found at 127.0.0.1:8080.  Trying again in 5 seconds...")
                      (sleep 5)
+                     
                      (unreal-eval-js js))
                    ])
+    
     (post "127.0.0.1:8080/js"
           #:close? #t
           #:data js)
