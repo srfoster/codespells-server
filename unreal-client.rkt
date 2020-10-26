@@ -22,7 +22,8 @@
   (unreal-js-fragment
    (string-join (flatten
                  (map string-or-fragment->string
-                      ss)))))
+                      ss))
+                ";")))
 
 (define (unreal-eval-js js-string-or-fragment)
   (define js (string-or-fragment->string js-string-or-fragment))
