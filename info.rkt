@@ -5,6 +5,7 @@
 	       "https://github.com/thoughtstem/website.git"
 	       "https://github.com/thoughtstem/website-js.git"
 	       "https://github.com/thoughtstem/webapp.git"
+	       "http-easy" 
 	       ))
 (define build-deps '("scribble-lib" "racket-doc" "rackunit-lib"))
 (define scribblings '(("scribblings/codespells-server.scrbl" ())))
