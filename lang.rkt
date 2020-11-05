@@ -139,7 +139,10 @@
      (identity ;rune-saver
       (rune-injector (current-editor-lang)
                      ;(demo-editor (codespells-basic-lang))
-                     (rune-surface-component (current-editor-lang))
+                     (rune-surface-component (current-editor-lang)
+                                             #:restore-state (thunk* @js{})
+                                             #:store-state (thunk* @js{})
+                                             )
                      ))))))
 
 
