@@ -262,13 +262,13 @@
 	   "(at [_ _ _] ...) should set (at-*) params correctly"))
 
 (define (current-x)
-  (+ (by-x) (at-x)))
+  @~a{ (@(by-x) + @(or (at-x) 0))})
 
 (define (current-y)
-  (+ (by-y) (at-y)))
+  @~a{ (@(by-y) + @(or (at-y) 0))})
 
 (define (current-z)
-  (+ (by-z) (at-z)))
+  @~a{ (@(by-z) + @(or (at-z) 0))})
 
 
 (define (codespells-basic-lang) 

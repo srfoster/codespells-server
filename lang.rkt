@@ -214,18 +214,36 @@
   (run-code #:side-effects? #f last-lang last-spell))
 
 (define (run-code #:side-effects? (side-effects? #t) lang code)
+  ;This is such a confusing function, given that it gets called twice.
+  ;Unreal's sends (at [x y z] (run-staged)) to eval-spell, which calls it with side effects (the main call).
+  ;  Note that in the main call, there are no current-x/y/z parameters set (they are all 0)
+  ;Then there is a recursive call, because (run-staged) calls it -- but with no side effects.
+  ;  Note that this is when current-x/y/z are set
+  ;The top call then sends side effects to Unreal if the result was an unreal-js-fragment
+  ;  
+  
   (displayln (~a "Running in lang: " lang))
   (displayln code)
 
   (dynamic-require lang #f)
 
-  (define result
+  (define initial-result
     (eval (read (open-input-string (~a "(let () " code ")")))
-	  (module->namespace lang)))
+          (module->namespace lang)))
 
+  ;; Sometimes runes return procedures that return unreal-js-fragments
+  ;; This is convenient to allow other runes to control their position with (at ...)
+  ;; But if  those runes are used at the top-level of a spell,
+  ;; we want to call the procedure in order to send the js-fragments over to Unreal
+  (define result (if (procedure? initial-result)
+                     (initial-result)
+                     initial-result
+                     ))
   
-  (when (and side-effects? (unreal-js-fragment? result))
-    (unreal-eval-js result))
+  (when (and side-effects?
+             (unreal-js-fragment? result))
+    (unreal-eval-js result)
+    )
 
   (displayln (~a "Result: " result))
 
