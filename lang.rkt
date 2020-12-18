@@ -20,19 +20,59 @@
          "./lore.rkt"
          "./unreal-client.rkt")
 
+(define (ajax-eval str)
+  @js{
+ var fd = new FormData()
+ fd.append("spell", "@str")
+
+ fetch('/eval-spell?lang=codespells-server/lang',
+ {method: 'POST',
+  body: fd})
+ .then(response => {
+  return response.text()	
+  })}
+  )
+
+(define (close-button)
+  (enclose
+   (button-danger
+    on-click: (call 'close)
+    "Close")
+   (script ()
+           (function (close)
+                     (ajax-eval "(close-all-ui)")
+                     ))))
+
+(define (launch-patreon-button)
+  (enclose
+   (button-success
+    on-click: (call 'launch)
+    "Support Us on Patreon")
+   (script ()
+           (function (launch)
+                 (ajax-eval "(launch-patreon)")    
+                     ))))
+
+
+
 
 (define (welcome r)
   (response/html/content 
-    (container 
-      (jumbotron
-	(img 
-	  style: (properties
-		   width: "100%")
-	  src: "https://codespells.org/images/logo.png")
-	(div "Welcome to the CodeSpells Web-Server!"
-	     (ul
-	       (li (a href: "/editor"
-		     "Check out the editor"))))))))
+   (enclose
+    (container
+     @style/inline{
+ body{
+  background-color: rgba(0,0,0,0);}}
+     (launch-patreon-button)
+     (close-button)
+     (iframe src: (~a "https://www.codespells.org/in-game.html?no-cache=" (random 1000000))
+             style: (properties
+                     width: "100%"
+                     height: "80%"
+                     border: "none")))
+    (script ()
+             
+            ))))
 
 
 ;TODO: Move to codespells-runes
@@ -65,6 +105,35 @@
 
 (define current-editor-lang (make-parameter (codespells-basic-lang)))
 
+(define (close-all-ui)
+  ; If we want a close button to close a particular widget,
+  ; that widget's initial URL will need to encode the widget ID
+  ; Example: localhost:8081/widget_id=welcome
+  ; And the widget will need to have been stored into globals with that ID
+  ; Example: globals.widgets = global.widgets || {};
+  ;          global.widgets.welcome = widget;
+  ; Then the page can construct a close button that will close itself
+  ; based on the widget ID
+  ; BUT FOR NOW - this works by just closing all widgets
+  @unreal-eval-js{
+ var list = GWorld.GetAllWidgetsOfClass([], WB_TextSpellcrafting_C);
+ var widgets = list.FoundWidgets;
+ widgets.map(function(widget){
+  widget.SetVisibility(ESlateVisibility.Hidden);
+  });
+}
+  
+  @unreal-eval-js{
+ var control = GWorld.GetPlayerController(0);
+ control.SetInputMode_GameOnly();
+ control.bShowMouseCursor = false;
+ })
+
+(define (launch-patreon)
+  @unreal-eval-js{
+ KismetSystemLibrary.LaunchURL("https://www.patreon.com/codespells")
+ })
+
 (define (editor r)
   (define (spell-runner editor)
     (enclose
@@ -72,10 +141,7 @@
       (div id: (id 'id)
 	   'onmouseleave: (call 'stageSpell @js{()=>null})
 	editor
-        #;
-	(button-success
-	  on-click: (call 'stageAndRun)
-	  "Run")
+        (close-button)
 	(div
 	  style: (properties
 		   padding-top: 20)
@@ -252,7 +318,7 @@
 (define-values (start url)
     (dispatch-rules
       [("")
-       welcome ]
+       welcome]
       [("editor")
        editor]
       [("stage-spell")

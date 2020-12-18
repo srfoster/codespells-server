@@ -25,8 +25,8 @@
                       ss))
                 " ")))
 
-(define (unreal-eval-js js-string-or-fragment)
-  (define js (string-or-fragment->string js-string-or-fragment))
+(define (unreal-eval-js . js-strings-or-fragments)
+  (define js (string-join (map string-or-fragment->string js-strings-or-fragments) ""))
 
   (displayln "************* unreal-eval-js ******************")
 
