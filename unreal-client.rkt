@@ -14,16 +14,17 @@
 (struct unreal-js-fragment (content) #:transparent)
 
 (define (string-or-fragment->string s)
-  (if (string? s)
-      s
-      (unreal-js-fragment-content s)))
+  (cond [(string? s) s]
+        [(unreal-js-fragment? s) (unreal-js-fragment-content s)]
+        [(procedure? s) (string-or-fragment->string (s))]
+        [else (error "You passed something that wasn't a string, js-fragment, or procedure into unreal-js")]))
 
 (define (unreal-js . ss)
   (unreal-js-fragment
    (string-join (flatten
                  (map string-or-fragment->string
                       ss))
-                " ")))
+                "")))
 
 (define (unreal-eval-js . js-strings-or-fragments)
   (define js (string-join (map string-or-fragment->string js-strings-or-fragments) ""))
