@@ -1,7 +1,8 @@
 #lang at-exp racket
 
 (provide at up down east west north south lore spinning beam
-	 build small medium large warp
+	 build ;small
+         medium large warp
          dig
          rotated
          current-x current-y current-z

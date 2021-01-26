@@ -4,12 +4,14 @@
  (struct-out unreal-js-fragment)
  unreal-eval-js ;Use this from now on
  unreal-js
- 
+ unreal-server-port
  unreal-call ;deprecating because it assumed non /js endpoints.  But things have been simplified
  )
 
 (require net/uri-codec
          net/http-easy)
+
+(define unreal-server-port (make-parameter 8080))
 
 (struct unreal-js-fragment (content) #:transparent)
 
@@ -34,13 +36,13 @@
   (with-handlers ([exn:fail:network:errno?
                    (lambda (e)
                      (displayln e)
-                     (displayln "No World server found at 127.0.0.1:8080.  Trying again in 5 seconds...")
+                     (displayln (~a "No World server found at 127.0.0.1:" (unreal-server-port) ".  Trying again in 5 seconds..."))
                      (sleep 5)
                      
                      (unreal-eval-js js))
                    ])
     
-    (post "127.0.0.1:8080/js"
+    (post (~a "127.0.0.1:" (unreal-server-port) "/js")
           #:close? #t
           #:data js)
 
@@ -52,7 +54,7 @@
 (define (unreal-call verb params)
   (displayln "Sending to Unreal...")
   
-  (post "127.0.0.1:8080/js"
+  (post (~a "127.0.0.1:" (unreal-server-port) "/js")
         #:close? #t
         #:data (hash-ref params 'script))
 
