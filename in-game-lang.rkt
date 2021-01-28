@@ -1,6 +1,6 @@
 #lang at-exp racket
 
-(provide at up down east west north south lore spinning beam
+(provide at up down east west north south spinning beam
 	 build ;small
          medium large warp
          dig
@@ -14,7 +14,7 @@
 	 (rename-in (only-in codespells-runes/basic-lang build) 
 		    [build old-build]))
 
-(require "./unreal-client.rkt" "./lore.rkt")
+(require "./unreal-client.rkt")
 
 (module+ test
 	 (require rackunit)
@@ -114,11 +114,6 @@
   (~a "/Game/MagicModule/VFX/P_" suff))
 
 
-(define (lore some-html)
-  (set-next-lore-to-show! some-html)
-  (unreal-call "js"
-               (hash 
-                'script @~a{showLore()})))
 
 
 (define (warp [worldName "SeekerWorld"])
@@ -414,16 +409,7 @@
                               (rune-image
                                (circle 30 'solid 'purple)))))
 
-                 (html-rune 'lore 
-                            (svg-rune-description
-                             (rune-background
-                              #:color "red"
-                              (rune-image
-                               (overlay
-                                (beside
-                                 (rotate -30 (triangle 20 'solid 'yellow))
-                                 (rotate 30 (triangle 20 'outline 'yellow)))
-                                (square 60 'solid 'darkred))))))
+                 
 
 
                  (html-rune 'dig 

@@ -86,9 +86,7 @@
  .SpellReplicationComponent
  .RequestRunSpellOnServer(@(~s (path->string last-lang)),
  "(let () (define x @(regexp-replace* #px"\\s+" (~a last-spell) " ")) (if (procedure? x) (x) x))",
- @(current-x),
- @(current-z),
- @(current-y));
+ {Translation: {X: @(current-x), Y: @(current-z), Z: @(current-y)}});
 }
        )))
 
