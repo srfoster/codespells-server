@@ -6,11 +6,10 @@
 
 (require website-js
          codespells-runes
-         codespells-server/in-game-lang
          codespells-server/ui/util
          )
 
-(define current-editor-lang (make-parameter (codespells-basic-lang)))
+(define current-editor-lang (make-parameter #f))
 
 (define (editor r)
   (define (spell-runner editor)

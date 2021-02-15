@@ -6,7 +6,6 @@
 (require website-js
          codespells-server/ui/util)
 
-
 (define (launch-patreon-button)
   (enclose
    (button-success

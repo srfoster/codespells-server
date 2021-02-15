@@ -6,7 +6,8 @@
  run-staged
  codespells-server-start
  current-editor-lang
- (all-from-out "./in-game-lang.rkt"))
+ (all-from-out "./unreal-js/util.rkt")
+ )
 
 ;TODO: Cleanup requires
 (require web-server/servlet
@@ -16,7 +17,7 @@
 	 ;(except-in webapp/js header small)
 	 (except-in website-js header small)
 	 codespells-runes
-	 "./in-game-lang.rkt"
+	 "./unreal-js/util.rkt"
          "./spell-execution.rkt"
          "./ui/spell-editor.rkt"
          "./ui/welcome.rkt"

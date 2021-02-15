@@ -11,8 +11,8 @@
          web-server/servlet-env
          web-server/http/request-structs
          webapp/server/util/responses
-         codespells-server/in-game-lang
-         codespells-server/unreal-client)
+         codespells-server/unreal-js/util
+         codespells-server/unreal-js/unreal-client)
 
 (define (request->code r)
   (string->symbol
@@ -53,25 +53,23 @@
 
   (define lang 
     (request->lang r))
+  
+  ;In multiplayer, lang is something like C://blah/blah/some-mod/main.rkt
+  ;  But these absolute paths don't make sense across computers.
+  ;  A safe assumption is that the client was running the same main.rkt file as the server,
+  ;  So the server will use "main.rkt" as the thing to dynamically require (which defaults to looking in the current directory).
+  ;  This will be the server's version of some-mod/main.rkt
+  (when (string-suffix? (~a lang) "main.rkt")
+    (define parts (explode-path lang))
+    (set! lang "main.rkt"
 
+          #;(string->symbol (~a (list-ref parts (- (length parts) 2))))))
+
+  
   (define result (run-code lang code))
 
   (response/html/content
-    (card-group  style: (properties height: 250
-				    width: "100%")
-		 (card style: (properties position: 'relative
-					  height: "100%")
-
-
-                       (with-handlers ([exn:fail? (lambda (e)
-                                                    (displayln (~a "No way to turn result into a Rune: "))
-                                                    (displayln result)
-                                                    (div "error"))])
-                           (datum->html 
-                            (codespells-basic-lang)
-                            result)))
-
-		 (card (card-body (card-text (~v result)))))))
+    (div)))
 
 
 (define running-as-multiplayer-server? (make-parameter #f))
@@ -79,8 +77,10 @@
 (define (run-staged)
   (if (running-as-multiplayer-server?)
       (run-code #:side-effects? #f last-lang last-spell)
-      (unreal-eval-js
-       @unreal-js{
+      (let ()
+        (displayln (~s (path->string last-lang)))
+        (unreal-eval-js
+         @unreal-js{
  var ccs = GWorld.GetAllActorsOfClass(Root.ResolveClass('Avatar')).OutActors;
  ccs.filter((c)=>c.IsLocallyControlled())[0]
  .SpellReplicationComponent
@@ -88,7 +88,7 @@
  "(let () (define x @(regexp-replace* #px"\\s+" (~a last-spell) " ")) (if (procedure? x) (x) x))",
  {Translation: {X: @(current-x), Y: @(current-z), Z: @(current-y)}});
 }
-       )))
+         ))))
 
 (define (run-code #:side-effects? (side-effects? #t) lang code)
   ;This is such a confusing function, given that it gets called twice.

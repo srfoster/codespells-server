@@ -4,11 +4,11 @@
          close-button
          close-all-ui
          (all-from-out webapp/server/util/responses)
-         (all-from-out codespells-server/unreal-client))
+         (all-from-out codespells-server/unreal-js/unreal-client))
 
 (require website-js
          webapp/server/util/responses
-         codespells-server/unreal-client)
+         codespells-server/unreal-js/unreal-client)
 
 (define (ajax-eval str)
   @js{
