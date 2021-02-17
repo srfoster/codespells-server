@@ -47,9 +47,6 @@
   var ret = ccs.filter((c)=>c.IsLocallyControlled())[0]
   .SpellReplicationComponent
   .ObjectFromMod(
-  "@(string-replace (path->string mod-folder)
-                    "\\"
-                    "\\\\")/",
   "@mod-name",
   "@blueprint-name", 
   {Translation: {X: @(current-x), Y: @(current-z), Z: @(current-y)},

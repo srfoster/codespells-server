@@ -60,7 +60,7 @@
   ;  So the server will use "main.rkt" as the thing to dynamically require (which defaults to looking in the current directory).
   ;  This will be the server's version of some-mod/main.rkt
   (when (string-suffix? (~a lang) "main.rkt")
-    (define parts (explode-path lang))
+    (define parts (explode-path (~a lang)))
     (set! lang "main.rkt"
 
           #;(string->symbol (~a (list-ref parts (- (length parts) 2))))))
