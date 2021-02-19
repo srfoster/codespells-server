@@ -4,7 +4,8 @@
          at current-x current-y current-z
          current-roll current-pitch current-yaw
          up down east west north south
-         rotated)
+         rotated
+         setup-mod mod-setups)
 
 (require codespells-runes
 	 codespells-runes/basic-lang
@@ -19,6 +20,24 @@
 	 (require (only-in codespells-runes/basic-lang small)))
 
 
+(define (setup-mod name pak-folder)
+  (add-mod-setup! (thunk (unreal-eval-js @~a{
+ modDirectories["@name"] = "@(string-replace (path->string pak-folder)
+                                             "\\"
+                                             "\\\\")/";}))))
+
+(define (to-pascal str)
+  (string-join
+   (map string-titlecase
+        (string-split str "-"))
+   ""))
+
+(define mod-setups
+  '())
+
+(define (add-mod-setup! f)
+  (set! mod-setups (cons f mod-setups)))
+
 (define current-scale (make-parameter 1))
 (define-syntax-rule (with-scale n lines ...)
   (parameterize ([current-scale n])
@@ -27,7 +46,7 @@
                              mod-name
                              blueprint-name)
   (displayln (~a "Loading BP from" mod-folder))
-
+  
   ;It's an open question whether we should return a thunk here.
   ; Functions to unreal-js fragments are useful because other runes can control their
   ; behavior with parameters like with (at ...).
